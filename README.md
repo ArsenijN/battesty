@@ -19,6 +19,7 @@ It's currently not meant to be used by anyone, not a candidate for release for s
 - Change icon canvas size to match Hi-DPI better and improve visivility and visual details
 - Update the icon on app start, not on time to measure (so it will not hang on latest saved measurement)
 - (older task) calculate annual capacity loss and determined battery capacity (not necessary since batteries can tell by themself what's their full capacity and design one). Aka I can't remember if 2.5% annual loss isn't hardcoded, and I also think that I should use API to get battery discharge current (and charge current), and also some handy info from the battery, not only depending on the percentage of the battery
+- Optimize for SSD wear (skip if Windows do that by default with any changing files)
 
 
 that's mainly all I think. Any support will be appreciated
