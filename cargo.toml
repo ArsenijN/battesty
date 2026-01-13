@@ -1,0 +1,11 @@
+[package]
+name = "battesty"
+version = "1.0.0"
+edition = "2021"
+
+[dependencies]
+winapi = { version = "0.3", features = ["shellapi", "winuser", "commctrl", "wingdi", "libloaderapi", "processthreadsapi", "synchapi"] }
+windows = { version = "0.52", features = ["Win32_System_Power", "Win32_Foundation", "Win32_UI_WindowsAndMessaging", "Win32_Graphics_Gdi", "Win32_UI_Shell", "Win32_System_Threading", "Win32_System_LibraryLoader"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
