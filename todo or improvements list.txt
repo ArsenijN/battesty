@@ -1,0 +1,18 @@
+Battesty (or batterty) - improvements list:
+1. Add so when battesty detects charge, it will also show ETA of charging - it already do that!!!!!
+2. When charging was detected, reset discharge ETA or calculate it, based of normalized values of usage - it already do that!!!!
+3. Fix icon
+4. Add settings and info page later
+5. fix issue that on app start, empty terminal appears
+
+
+
+calculate annual capacity loss and determined battery capacity (not necessary since batteries can tell by themself what's their full capacity and design one)
+
+
+
+
+Lightning isn't yellow but black
+Change the canvas size for hi-res
+Update the icon on app start (so it will not hang on latest saved measurement)
+Add the green knob at the top as sign that it's 90~100% charged (close to where battery knob is placed)
