@@ -9,32 +9,34 @@ pub fn create_battery_icon(hdc: HDC, percentage: u8, is_charging: bool) -> HICON
     unsafe {
         let hdc_mem = CreateCompatibleDC(hdc);
         let hbm = CreateCompatibleBitmap(hdc, ICON_SIZE, ICON_SIZE);
+        let hbm_mask = CreateCompatibleBitmap(hdc, ICON_SIZE, ICON_SIZE);
         SelectObject(hdc_mem, hbm);
         
-        // Transparent background
+        // White background (will be made transparent via mask)
         let brush_bg = CreateSolidBrush(COLORREF(0x00FFFFFF));
         let rect = RECT { left: 0, top: 0, right: ICON_SIZE, bottom: ICON_SIZE };
         FillRect(hdc_mem, &rect, brush_bg);
+        DeleteObject(brush_bg);
         
-        // Scale coordinates for 32x32 canvas
-        let scale = 2;
-        
-        // Battery outline (black)
-        let brush_outline = CreateSolidBrush(COLORREF(0x00000000));
+        // Use thin pen for outline
+        let pen_outline = CreatePen(PS_SOLID, 2, COLORREF(0x00000000));
+        let pen_null = GetStockObject(NULL_PEN);
+        let old_pen = SelectObject(hdc_mem, pen_outline);
+        let brush_outline = GetStockObject(NULL_BRUSH);
         let old_brush = SelectObject(hdc_mem, brush_outline);
         
-        // Main battery body
-        RoundRect(hdc_mem, 4*scale, 8*scale, 28*scale, 30*scale, 3*scale, 3*scale);
+        // Main battery body - outline only
+        RoundRect(hdc_mem, 6, 10, 26, 28, 3, 3);
         
-        // Battery terminal (nub at the top)
-        Rectangle(hdc_mem, 10*scale, 4*scale, 22*scale, 8*scale);
+        // Battery terminal (nub at the top) - outline only
+        Rectangle(hdc_mem, 12, 6, 20, 10);
         
         // Calculate fill height
-        let body_height = 20 * scale;
+        let body_height = 16;
         let fill_height = if percentage == 0 { 
             0 
         } else { 
-            ((percentage as i32) * body_height / 100).max(scale) 
+            ((percentage as i32) * body_height / 100).max(1) 
         };
         
         // Determine fill color
@@ -48,40 +50,42 @@ pub fn create_battery_icon(hdc: HDC, percentage: u8, is_charging: bool) -> HICON
             COLORREF(0x00FFFFFF) // White for normal
         };
         
-        // Draw the battery fill
+        // Draw the battery fill WITHOUT border
         if fill_height > 0 {
             let brush_fill = CreateSolidBrush(fill_color);
             SelectObject(hdc_mem, brush_fill);
+            SelectObject(hdc_mem, pen_null); // Use NULL pen for fill - no border
             
-            // Fill from bottom up
-            let fill_top = 28*scale - fill_height;
-            Rectangle(hdc_mem, 6*scale, fill_top, 26*scale, 28*scale);
+            // Fill from bottom up (inside the battery body)
+            let fill_top = 26 - fill_height;
+            Rectangle(hdc_mem, 8, fill_top, 24, 26);
             
             DeleteObject(brush_fill);
         }
         
-        // Add fully charged indicator (green knob at top)
+        // Add fully charged indicator (green circle at top)
         if percentage >= 90 && is_charging {
-            let brush_green = CreateSolidBrush(COLORREF(0x0000FF00)); // Bright green
+            let brush_green = CreateSolidBrush(COLORREF(0x0000FF00));
             SelectObject(hdc_mem, brush_green);
+            SelectObject(hdc_mem, pen_null); // NULL pen for the circle
             
-            // Small circle at the battery terminal
-            Ellipse(hdc_mem, 14*scale, 2*scale, 18*scale, 6*scale);
+            Ellipse(hdc_mem, 14, 4, 18, 8);
             
             DeleteObject(brush_green);
         }
         
-        // Add charging indicator (lightning bolt) - BLACK not yellow
+        // Add charging indicator (lightning bolt) - solid fill, thin outer border
         if is_charging && percentage < 100 {
-            let brush_bolt = CreateSolidBrush(COLORREF(0x00000000)); // Black bolt
+            let brush_bolt = CreateSolidBrush(COLORREF(0x00000000)); // Black fill
             SelectObject(hdc_mem, brush_bolt);
+            SelectObject(hdc_mem, pen_null); // NULL pen for bolt body
             
-            // Larger lightning bolt shape
+            // Lightning bolt shape
             let points = [
-                POINT { x: 16*scale, y: 12*scale },
-                POINT { x: 14*scale, y: 18*scale },
-                POINT { x: 18*scale, y: 18*scale },
-                POINT { x: 14*scale, y: 24*scale },
+                POINT { x: 16, y: 14 },
+                POINT { x: 14, y: 19 },
+                POINT { x: 17, y: 19 },
+                POINT { x: 15, y: 24 },
             ];
             Polygon(hdc_mem, &points);
             
@@ -89,20 +93,21 @@ pub fn create_battery_icon(hdc: HDC, percentage: u8, is_charging: bool) -> HICON
         }
         
         SelectObject(hdc_mem, old_brush);
+        SelectObject(hdc_mem, old_pen);
+        DeleteObject(pen_outline);
         
         let icon_info = ICONINFO {
             fIcon: TRUE,
             xHotspot: 0,
             yHotspot: 0,
-            hbmMask: hbm,
+            hbmMask: hbm_mask,
             hbmColor: hbm,
         };
         
         let icon = CreateIconIndirect(&icon_info).unwrap_or_default();
         
-        DeleteObject(brush_bg);
-        DeleteObject(brush_outline);
         DeleteObject(hbm);
+        DeleteObject(hbm_mask);
         DeleteDC(hdc_mem);
         
         icon
