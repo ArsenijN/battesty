@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Local, Duration};
 use crate::settings::AppSettings;
 
-pub const DEBUG_MODE: bool = false;
+pub const DEBUG_MODE: bool = true;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct BatteryMeasurement {

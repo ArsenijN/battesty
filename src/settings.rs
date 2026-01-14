@@ -20,10 +20,17 @@ impl Default for AppSettings {
 impl AppSettings {
     pub fn load() -> Self {
         let config_path = Self::get_config_path();
-        std::fs::read_to_string(&config_path)
+        let settings = std::fs::read_to_string(&config_path)
             .ok()
             .and_then(|s| serde_json::from_str(&s).ok())
-            .unwrap_or_default()
+            .unwrap_or_default();
+        
+        // Auto-create config file if it doesn't exist
+        if !config_path.exists() {
+            let _ = std::fs::write(&config_path, serde_json::to_string_pretty(&settings).unwrap_or_default());
+        }
+        
+        settings
     }
 
     pub fn save(&self) {
